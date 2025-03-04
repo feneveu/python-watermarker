@@ -6,8 +6,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageTk
 def watermark():
     """loads the image and watermarks it"""
 
-    # need to be able to access the watermarker from the function call
-    global text_entry
+    # need to be able to access the watermarker and image from the function call
+    global text_entry, watermarked_image
 
     # the filepath of the image is gained from the filedialog opening/user choosing
     file_path = filedialog.askopenfilename()
@@ -15,11 +15,11 @@ def watermark():
     if not file_path:
         return
 
-    # allows us to do futher combinations of image on top images later
+    # allows us to do further combinations of image on top images later
     image = Image.open(file_path).convert("RGBA")
 
     # make the image smaller at a ratio
-    max_size = (500, 500)
+    max_size = (400, 400)
     image.thumbnail(max_size, Image.LANCZOS)
 
     # Get user input text(if it's nothing watermark = watermark)
@@ -52,6 +52,23 @@ def watermark():
     panel.config(image=tk_image)
     panel.image = tk_image
 
+    # create the button to save once we have an image to save
+    save_btn.pack(pady=10)
+
+
+def save_image():
+    """Saves the new watermarked image"""
+    global watermarked_image
+    # if there is an image, determine a file-path given by the user
+    if watermarked_image:
+        filepath = filedialog.asksaveasfilename(defaultextension=".png",
+                                                filetypes=[("PNG files", "*.png"),
+                                                           ("JPEG files", "*.jpg"),
+                                                           ("All Files", "*.*")])
+        # if there exists a file path, save the image there
+        if filepath:
+            watermarked_image.save(filepath)
+
 
 # Create the main Tkinter window
 root = tk.Tk()
@@ -77,7 +94,7 @@ panel = tk.Label(frame, bg="white")
 panel.pack(expand=True)
 
 
-# Custom Styled Button
+# Custom Styled Buttons
 def on_enter(e):
     btn.config(bg="#1ABC9C", fg="white")
 
@@ -86,10 +103,27 @@ def on_leave(e):
     btn.config(bg="#16A085", fg="white")
 
 
-# instantiates button
+def on_enter_save(e):
+    save_btn.config(bg="#E74C3C", fg="white")
+
+
+def on_leave_save(e):
+    save_btn.config(bg="#C0392B", fg="white")
+
+
+# instantiates button for open image
 btn = tk.Button(root, text="Open Image", command=watermark, font=("Arial", 14, "bold"), bg="#16A085", fg="white",
                 activebackground="#1ABC9C", activeforeground="white", relief="flat", padx=20, pady=10, bd=3)
 btn.pack(pady=15)
+
+# instantiates button to save image
+save_btn = tk.Button(root, text="Save Image", command=save_image, font=("Arial", 14, "bold"), bg="#C0392B", fg="white",
+                      activebackground="#E74C3C", activeforeground="white", relief="flat", padx=20, pady=10, bd=3)
+save_btn.bind("<Enter>", on_enter_save)
+save_btn.bind("<Leave>", on_leave_save)
+# only comes on screen if there is an image to download
+save_btn.pack_forget()
+
 
 # hover over button and color change effect
 btn.bind("<Enter>", on_enter)
